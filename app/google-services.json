@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "232195472002",
+    "project_id": "command-converter",
+    "storage_bucket": "command-converter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:232195472002:android:c658df924eaab85b98d29b",
+        "android_client_info": {
+          "package_name": "com.example.commandconverter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkZtQc5PF-bdMvtRV1YdIdecSFQz3C7w8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
