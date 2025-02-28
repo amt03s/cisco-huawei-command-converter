@@ -335,34 +335,55 @@ class CommandConverterViewModel : ViewModel() {
 
 
     fun suggestCommand(command: String): String {
-        var bestMatch = ""
+        val lowerCommand = command.lowercase().trim()
+
+        // If the user hasn't typed anything, don't suggest anything
+        if (lowerCommand.isEmpty()) return ""
+
+        var bestMatch: String? = null
         var bestDistance = Int.MAX_VALUE
 
-        for (key in commandMap.keys + commandMap.values) { // Check both Cisco and Huawei commands
-            val distance = levenshteinDistance(command, key)
+        // First, check for prefix matches
+        for (key in commandMap.keys + commandMap.values) {
+            if (key.lowercase().startsWith(lowerCommand)) {
+                return key // Immediately return if a perfect prefix match is found
+            }
+        }
+
+        // If no prefix matches, use Levenshtein Distance as a backup
+        for (key in commandMap.keys + commandMap.values) {
+            val distance = weightedLevenshtein(lowerCommand, key.lowercase())
+
             if (distance < bestDistance) {
                 bestDistance = distance
                 bestMatch = key
             }
         }
 
-        return if (bestDistance <= 2) bestMatch else "" // Suggest only if distance is within 2 edits
+        // Suggest only if the match is reasonably close (distance ≤ 2)
+        return if (bestDistance <= 2) bestMatch ?: "" else ""
     }
 
-    private fun levenshteinDistance(s1: String, s2: String): Int {
-        val dp = Array(s1.length + 1) { IntArray(s2.length + 1) }
-        for (i in s1.indices) dp[i + 1][0] = i + 1
-        for (j in s2.indices) dp[0][j + 1] = j + 1
 
-        for (i in s1.indices) {
-            for (j in s2.indices) {
-                dp[i + 1][j + 1] = if (s1[i] == s2[j]) {
-                    dp[i][j]
-                } else {
-                    min(dp[i][j], min(dp[i + 1][j], dp[i][j + 1])) + 1
-                }
+
+
+
+    private fun weightedLevenshtein(s1: String, s2: String): Int {
+        val m = s1.length
+        val n = s2.length
+        val dp = Array(2) { IntArray(n + 1) }
+
+        for (j in 0..n) dp[0][j] = j
+
+        for (i in 1..m) {
+            dp[i % 2][0] = i
+            for (j in 1..n) {
+                val cost = if (s1[i - 1] == s2[j - 1]) 0 else if (i == 1 || j == 1) 2 else 1 // Heavier penalty for first letter differences
+                dp[i % 2][j] = minOf(dp[(i - 1) % 2][j] + 1, dp[i % 2][j - 1] + 1, dp[(i - 1) % 2][j - 1] + cost)
             }
         }
-        return dp[s1.length][s2.length]
+        return dp[m % 2][n]
     }
+
+
 }
